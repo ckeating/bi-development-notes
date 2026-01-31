@@ -22,12 +22,13 @@ This is the foundation.
 **FiscalMonthNumber**
 ```sql
 ((MONTH([Date]) - 10 + 12) % 12) + 1
+```
 
 Results
-	•	Oct → 1
-	•	Nov → 2
-	•	…
-	•	Sep → 12
+* Oct → 1
+* Nov → 2
+* …
+* Sep → 12
 
 👉 This is the column you sort fiscal month names by.
 
@@ -36,27 +37,32 @@ Results
 2️⃣ Fiscal Month Name (friendly display)
 
 Full month name
-
+``sql
 DATENAME(MONTH, DATEADD(MONTH, -9, [Date]))
+```
 
 Short month name (recommended for charts)
 
+```sql
 LEFT(DATENAME(MONTH, DATEADD(MONTH, -9, [Date])), 3)
+```
 
 Why -9 months?
-	•	Shifts Oct → Jan, Nov → Feb, etc.
-	•	Aligns calendar month names with fiscal position
-	•	Avoids CASE statements and stays readable
+* Shifts Oct → Jan, Nov → Feb, etc.
+* Aligns calendar month names with fiscal position
+* voids CASE statements and stays readable
 
 ⸻
 
 3️⃣ Fiscal Year (numeric)
 
+``sql
 YEAR(DATEADD(MONTH, 3, [Date]))
+```
 
 Examples
-	•	2025-09-30 → FY 2025
-	•	2025-10-01 → FY 2026
+* 2025-09-30 → FY 2025
+* 2025-10-01 → FY 2026
 
 Simple. Standard. Battle-tested.
 
@@ -64,13 +70,14 @@ Simple. Standard. Battle-tested.
 
 4️⃣ Fiscal Quarter (1–4)
 
+```sql
 ((FiscalMonthNumber - 1) / 3) + 1
-
+``
 Results
-	•	Oct–Dec → Q1
-	•	Jan–Mar → Q2
-	•	Apr–Jun → Q3
-	•	Jul–Sep → Q4
+* Oct–Dec → Q1
+* Jan–Mar → Q2
+* Apr–Jun → Q3
+* Jul–Sep → Q4
 
 ⸻
 
