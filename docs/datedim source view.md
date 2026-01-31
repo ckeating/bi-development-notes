@@ -182,7 +182,7 @@ In the refactored view, we have two `CROSS APPLY` blocks:
 ```sql
 CROSS APPLY (...) fy
 CROSS APPLY (...) f
-```
+``` 
 
 	•	fy computes base fiscal primitives
 	•	f computes derived fiscal fields
