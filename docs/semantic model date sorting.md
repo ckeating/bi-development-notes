@@ -56,7 +56,7 @@ Why -9 months?
 
 3️⃣ Fiscal Year (numeric)
 
-``sql
+```sql
 YEAR(DATEADD(MONTH, 3, [Date]))
 ```
 
