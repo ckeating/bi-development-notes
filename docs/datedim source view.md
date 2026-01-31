@@ -165,4 +165,4 @@ WHERE EXISTS
     WHERE fct.SurgeryDateKey = dd.DateKey
 );
 
-```sql
+```
