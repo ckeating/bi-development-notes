@@ -188,6 +188,7 @@ CROSS APPLY (...) f
 • f computes derived fiscal fields
 
 In my version:
+
 • FiscalMonthNumber is computed in fy
 • But in the SELECT, you reference f.FiscalMonthNumber
 
