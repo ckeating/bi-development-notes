@@ -37,7 +37,7 @@ Results
 2️⃣ Fiscal Month Name (friendly display)
 
 Full month name
-``sql
+```sql
 DATENAME(MONTH, DATEADD(MONTH, -9, [Date]))
 ```
 
