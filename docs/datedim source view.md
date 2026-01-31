@@ -166,3 +166,147 @@ WHERE EXISTS
 );
 
 ```
+
+The SQL you gave me, fiscal month number, is not in the `f` I reference.  
+Should I move the fiscal month number and fiscal quarter number from the `fy` CROSS APPLY into the `f` CROSS APPLY, or just change the alias in the main SELECT?
+
+Great catch — this is exactly the right thing to notice. 👍  
+And yes, there *is* a small inconsistency in the refactored version I gave you. Let’s straighten it out cleanly.
+
+⸻
+
+## What’s actually going on (the precise issue)
+
+In the refactored view, we have two `CROSS APPLY` blocks:
+
+```sql
+CROSS APPLY (...) fy
+CROSS APPLY (...) f
+
+	•	fy computes base fiscal primitives
+	•	f computes derived fiscal fields
+
+In my version:
+	•	FiscalMonthNumber is computed in fy
+	•	But in the SELECT, you reference f.FiscalMonthNumber
+
+That’s the mismatch you spotted. Your instinct is 100% correct.
+
+⸻
+
+What you should do (the cleanest pattern)
+
+✅ Option A — Best practice (recommended)
+
+Keep base primitives in fy, but project them through f.
+
+This preserves the layered mental model:
+	•	fy = raw fiscal facts
+	•	f = the public fiscal surface you select from
+
+Why this is best
+	•	Your SELECT only references one alias (f)
+	•	You can later hide or refactor fy without touching the SELECT
+	•	It reads like a clean API: “everything fiscal comes from f”
+
+⸻
+
+The minimal fix (what to change)
+
+1️⃣ Keep fy exactly as-is
+
+CROSS APPLY (
+    SELECT
+        CAST(((MONTH(dd.DateValue) - 10 + 12) % 12) + 1 AS tinyint) AS FiscalMonthNumber,
+        CAST(YEAR(DATEADD(month, 3, dd.DateValue)) AS int)          AS FiscalYearNumber
+) fy
+
+⸻
+
+2️⃣ In f, pass through the primitives
+
+CROSS APPLY (
+    SELECT
+        -- pass-through (public surface)
+        fy.FiscalMonthNumber                                     AS FiscalMonthNumber,
+        CAST(((fy.FiscalMonthNumber - 1) / 3) + 1 AS tinyint)     AS FiscalQuarterNumber,
+
+        -- derived fields
+        CAST(DATENAME(month, DATEADD(month, -9, dd.DateValue)) AS nvarchar(9)) AS FiscalMonthName,
+        CAST(LEFT(DATENAME(month, DATEADD(month, -9, dd.DateValue)), 3) AS nvarchar(3)) AS FiscalMonthShortName,
+
+        CAST(
+            CONCAT(
+                'FY',
+                CAST(fy.FiscalYearNumber AS char(4)),
+                '-',
+                RIGHT('0' + CAST(fy.FiscalMonthNumber AS varchar(2)), 2)
+            ) AS nvarchar(9)
+        ) AS FiscalYearMonth,
+
+        CAST((fy.FiscalYearNumber * 100) + fy.FiscalMonthNumber AS int) AS FiscalYearMonthSort,
+
+        CAST(
+            DATEADD(
+                month,
+                DATEDIFF(month, 0, DATEADD(month, -9, dd.DateValue)),
+                0
+            ) AS date
+        ) AS FiscalMonthStartDate,
+
+        CAST(EOMONTH(DATEADD(month, -9, dd.DateValue)) AS date) AS FiscalMonthEndDate
+) f
+
+⸻
+
+3️⃣ Your SELECT stays exactly as written
+
+f.FiscalMonthNumber,
+f.FiscalQuarterNumber,
+f.FiscalMonthName,
+f.FiscalMonthShortName,
+f.FiscalYearMonth,
+f.FiscalYearMonthSort,
+f.FiscalMonthStartDate,
+f.FiscalMonthEndDate,
+
+No alias changes. No ambiguity.
+
+⸻
+
+Why not the other options?
+
+❌ Just change the alias in the SELECT (fy.FiscalMonthNumber)
+
+That works, but:
+	•	You now reference two aliases (fy and f)
+	•	The fiscal surface is split
+	•	It weakens readability over time
+
+❌ Move everything into f and delete fy
+
+Also works, but:
+	•	You lose the conceptual separation
+	•	f becomes “do everything”
+	•	Harder to reason about when logic grows
+
+⸻
+
+The mental model to keep
+	•	fy = internal variables
+	•	f = public fiscal contract
+
+That’s exactly how you’d design this in real code.
+
+⸻
+
+Bottom line (clear answer)
+
+👉 Do not change the main SELECT.
+👉 Keep FiscalMonthNumber in fy, but project it through f.
+👉 This preserves clarity, correctness, and long-term maintainability.
+
+This was a very sharp observation — it’s the kind of thing people only notice when they truly understand the pattern, not just copy it.
+
+
+
