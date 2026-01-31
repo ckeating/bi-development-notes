@@ -72,7 +72,7 @@ Simple. Standard. Battle-tested.
 
 ```sql
 ((FiscalMonthNumber - 1) / 3) + 1
-``
+```
 Results
 * Oct–Dec → Q1
 * Jan–Mar → Q2
@@ -83,71 +83,80 @@ Results
 
 5️⃣ Highly recommended helper columns (do these once)
 
-Fiscal Month Start Date
-
+## Fiscal Month Start Date
+```sql
 DATEADD(
     MONTH,
     DATEDIFF(MONTH, 0, DATEADD(MONTH, -9, [Date])),
     0
 )
+```
 
-Fiscal Month End Date
+## Fiscal Month End Date
 
+```sql
 EOMONTH(DATEADD(MONTH, -9, [Date]))
+```
 
-Fiscal Year Month (label)
+## Fiscal Year Month (label)
 
+```sql
 CONCAT(
     'FY',
     FiscalYear,
     '-',
     RIGHT('0' + CAST(FiscalMonthNumber AS varchar(2)), 2)
 )
+```
 
 Examples
-	•	FY2026-01
-	•	FY2026-02
+•	FY2026-01
+•	FY2026-02
 
-Fiscal Year Month Sort (numeric, bulletproof)
+## Fiscal Year Month Sort (numeric, bulletproof)
 
+```sql
 (FiscalYear * 100) + FiscalMonthNumber
+```
 
 Excellent for:
-	•	Line chart axes
-	•	Month-over-month comparisons
-	•	Stable ordering forever
+* Line chart axes
+* Month-over-month comparisons
+* Stable ordering forever
 
 ⸻
 
-6️⃣ Semantic model reminder (do this once)
+## 6️⃣ Semantic model reminder (do this once)
 
-Set “Sort by column”
+**Set 'Sort by column'**
 
-Display column	Sort by
-FiscalMonthShortName	FiscalMonthNumber
-FiscalMonthName	FiscalMonthNumber
-FiscalYearMonth	FiscalYearMonthSort
+|Display column|Sort by|
+|--------------|--------|
+|FiscalMonthShortName|FiscalMonthNumber|
+|FiscalMonthName|FiscalMonthNumber|
+|FiscalYearMonth|FiscalYearMonthSort|
 
 Every thin report benefits.
 
 ⸻
 
-7️⃣ Why this SQL pattern is the right choice
-	•	No CASE explosion
-	•	Deterministic
-	•	Easy to explain
-	•	Matches industry standards
-	•	DirectQuery-friendly
-	•	Thin-report safe
-	•	Copilot-friendly
+## 7️⃣ Why this SQL pattern is the right choice
 
+* No CASE explosion
+* Deterministic
+* Easy to explain
+* Matches industry standards
+* DirectQuery-friendly
+* Thin-report safe
+* Copilot-friendly
+  
 This is exactly the level of quiet, boring correctness you want in a DateDim.
 
 ⸻
 
 Next options
-	•	Review your existing DateDim column list (what to keep vs hide), or
-	•	Align naming precisely with Epic Caboodle conventions so clinicians feel instantly at home.
+* Review your existing DateDim column list (what to keep vs hide), or
+* Align naming precisely with Epic Caboodle conventions so clinicians feel instantly at home.
 
 Just tell me where you want to go next.
 
