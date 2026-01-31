@@ -1,5 +1,7 @@
 # Datedim source view
 
+```sql
+
 /* =====================================================================
    DateDim Source View (Caboodle DateDim + 1-row Reporting Context)
    Refactor: compute fiscal “clean layer” once via CROSS APPLY, reuse fields
@@ -162,3 +164,5 @@ WHERE EXISTS
     FROM CDWReport.dbo.SurgicalCaseFact AS fct
     WHERE fct.SurgeryDateKey = dd.DateKey
 );
+
+```sql
