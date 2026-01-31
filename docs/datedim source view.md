@@ -184,12 +184,12 @@ CROSS APPLY (...) fy
 CROSS APPLY (...) f
 ``` 
 
-•	fy computes base fiscal primitives
-•	f computes derived fiscal fields
+• fy computes base fiscal primitives
+• f computes derived fiscal fields
 
 In my version:
-•	FiscalMonthNumber is computed in fy
-•	But in the SELECT, you reference f.FiscalMonthNumber
+• FiscalMonthNumber is computed in fy
+• But in the SELECT, you reference f.FiscalMonthNumber
 
 That’s the mismatch you spotted. Your instinct is 100% correct.
 
