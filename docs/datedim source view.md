@@ -217,16 +217,18 @@ The minimal fix (what to change)
 
 1️⃣ Keep fy exactly as-is
 
+```sql
 CROSS APPLY (
     SELECT
         CAST(((MONTH(dd.DateValue) - 10 + 12) % 12) + 1 AS tinyint) AS FiscalMonthNumber,
         CAST(YEAR(DATEADD(month, 3, dd.DateValue)) AS int)          AS FiscalYearNumber
 ) fy
-
+```
 ⸻
 
 2️⃣ In f, pass through the primitives
 
+```sql
 CROSS APPLY (
     SELECT
         -- pass-through (public surface)
@@ -259,10 +261,12 @@ CROSS APPLY (
         CAST(EOMONTH(DATEADD(month, -9, dd.DateValue)) AS date) AS FiscalMonthEndDate
 ) f
 
+```
 ⸻
 
 3️⃣ Your SELECT stays exactly as written
 
+```sql
 f.FiscalMonthNumber,
 f.FiscalQuarterNumber,
 f.FiscalMonthName,
@@ -271,9 +275,9 @@ f.FiscalYearMonth,
 f.FiscalYearMonthSort,
 f.FiscalMonthStartDate,
 f.FiscalMonthEndDate,
+```
 
 No alias changes. No ambiguity.
-
 ⸻
 
 Why not the other options?
@@ -281,22 +285,22 @@ Why not the other options?
 ❌ Just change the alias in the SELECT (fy.FiscalMonthNumber)
 
 That works, but:
-	•	You now reference two aliases (fy and f)
-	•	The fiscal surface is split
-	•	It weakens readability over time
+* You now reference two aliases (fy and f)
+* The fiscal surface is split
+* It weakens readability over time
 
 ❌ Move everything into f and delete fy
 
 Also works, but:
-	•	You lose the conceptual separation
-	•	f becomes “do everything”
-	•	Harder to reason about when logic grows
+* You lose the conceptual separation
+* f becomes “do everything”
+* Harder to reason about when logic grows
 
 ⸻
 
 The mental model to keep
-	•	fy = internal variables
-	•	f = public fiscal contract
+• fy = internal variables
+• f = public fiscal contract
 
 That’s exactly how you’d design this in real code.
 
@@ -309,6 +313,3 @@ Bottom line (clear answer)
 👉 This preserves clarity, correctness, and long-term maintainability.
 
 This was a very sharp observation — it’s the kind of thing people only notice when they truly understand the pattern, not just copy it.
-
-
-
