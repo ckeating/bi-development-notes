@@ -35,3 +35,32 @@ CROSS APPLY (
 ) f
 
 ```
+## MIN(Date) vs SELECTEDVALUE(Date) on Axes
+
+**Short answer:** yes — `MIN(Date)` (or `MAX(Date)`) is *much* more flexible than `SELECTEDVALUE(Date)` for axis-driven visuals.  
+Long answer below, because this is one of those “once you see it, you never unsee it” Fabric / Power BI concepts.
+
+---
+
+## Why `SELECTEDVALUE()` bites you on axes
+
+`SELECTEDVALUE()` only works when **exactly one value** exists in the filter context.
+
+That’s a fragile assumption on visuals.
+
+### Works when:
+- Axis = `DateDim[Date]` (daily grain)
+- Card / KPI
+- Slicer with single-select **ON**
+
+### Breaks when:
+- Axis = Month, Quarter, Year
+- Axis = text column (Month Name)
+- Tooltips
+- Multi-select slicers
+- Any visual that groups rows
+
+When Power BI evaluates a **month bucket**, the filter context contains **many dates**.
+
+**Result:**
+
