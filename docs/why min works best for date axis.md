@@ -27,7 +27,9 @@ When Power BI evaluates a **month bucket**, the filter context contains **many d
 
 **Result:**
 
+```
 SELECTEDVALUE(Date) → BLANK
+```
 
 No error. Just silent failure 😬
 
@@ -36,7 +38,7 @@ No error. Just silent failure 😬
 ## Why `MIN(Date)` “just works”
 
 `MIN()` and `MAX()` don’t care how many values are in context.  
-They collapse the current grain into a **deterministic scalar**.
+They **collapse the current grain into a deterministic scalar**.
 
 | Axis grain | Dates in context | `MIN(Date)` |
 |-----------|------------------|-------------|
@@ -117,10 +119,11 @@ If you want your intent to be crystal clear, some teams standardize on:
 
 ```DAX
 VAR AxisDate = MIN ( 'DateDim'[Date] )
+```
 
 Even if you later switch to MAX, the semantics stay obvious:
 
-“This is the date representing the axis bucket.”
+> “This is the date representing the axis bucket.”
 
 That makes future refactors safer — especially in shared semantic models.
 
