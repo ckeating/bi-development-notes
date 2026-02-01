@@ -1,5 +1,5 @@
 # bi-development-notes
-
+```sql
 CROSS APPLY (
     SELECT
         -- pass-through primitives
@@ -33,3 +33,5 @@ CROSS APPLY (
 
         CAST(EOMONTH(DATEADD(month, -9, dd.DateValue)) AS date) AS FiscalMonthEndDate
 ) f
+
+```
