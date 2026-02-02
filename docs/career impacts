@@ -1,0 +1,99 @@
+## Enabled vs Learning — Clarifying Where This Work Belongs
+
+**Short answer:**  
+Yes — what you described absolutely lives under **Enabled**.  
+And yes — learning *is* one aspect of Enabled, but only when it’s the right kind of learning.
+
+---
+
+## 1. Where do those semantic model learnings belong?
+
+What you described is a textbook example of **Enabled** work.
+
+Specifically, you:
+- Refactored date logic down to the SQL layer, improving clarity, reuse, and correctness
+- Learned and implemented proper fiscal date sorting (e.g., October → September)
+- Understood how window logic depends on correct time boundaries, not just DAX patterns
+- Translated SQL logic into reliable, reusable semantic model measures
+
+This is not passive learning.  
+It is **applied, durable learning that changes how future work gets done**.
+
+That is Enabled.
+
+---
+
+## 2. Why this is Enabled (not Delivered or Advanced)
+
+### Delivered?
+No.
+- No specific artifact was handed off *just* by learning this
+- The value is the capability you built, not a single deliverable
+
+### Advanced?
+Sometimes learning supports Advanced work, but:
+- Advanced is about moving a specific project forward
+- What you learned here applies beyond one project
+
+### Enabled?
+Yes.
+- It improves future work
+- It reduces rework and errors
+- It raises your baseline quality
+- It shortens future delivery time
+- It prevents subtle bugs (especially date-related issues)
+
+That matches the definition of Enabled exactly.
+
+---
+
+## 3. Is learning just one aspect of Enabled?
+
+Yes — **but only applied learning counts**.
+
+### Not Enabled learning
+- Reading docs without applying them
+- Watching tutorials “for later”
+- One-off tricks you never reuse
+
+These do not belong in a work review.
+
+### Enabled learning (what you did)
+- Learning that changed architecture decisions
+- Learning that simplified future builds
+- Learning that standardized patterns
+- Learning that prevented known failure modes
+
+This belongs under Enabled.
+
+---
+
+## 4. How to capture this in a weekly review
+
+Example entry:
+
+**Enabled**
+- Established reusable best practices for date handling in semantic models, including pushing fiscal logic to SQL, implementing correct fiscal sorting (Oct–Sep), and aligning window logic with proper time boundaries
+- Improved reliability and reuse of date-based measures, reducing future refactoring and edge-case errors
+
+This is not “I learned something.”  
+This is “I raised the quality bar.”
+
+---
+
+## 5. How this shows up in a self-evaluation
+
+That weekly entry rolls up to something like:
+
+> This year, I strengthened foundational modeling practices by establishing reusable patterns for fiscal date handling, window logic, and SQL-to-semantic-layer design. These improvements increased consistency, reduced rework, and improved reliability across time-based reporting.
+
+That is senior-level, accurate, and defensible.
+
+---
+
+## 6. One sentence to remember
+
+**Learning is Enabled when it changes how future work gets done.**
+
+If it does, capture it.  
+If it doesn’t, don’t.
