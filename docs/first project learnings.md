@@ -304,5 +304,8 @@ They are **accessors** , not computations
 
 **Examples from model**
 
+![ex](../)
+
+
 
 
