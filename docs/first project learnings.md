@@ -304,8 +304,34 @@ They are **accessors** , not computations
 
 **Examples from model**
 
-![ex](../)
+The month name of January comes from 
 
+![ex](../img/getter%20month%20name.png)
+
+This starts with the source SQL for DateDim:
+
+* First the last closed month is derived at runtime based on the current date:
+
+```sql
+FROM
+(
+    /* Last closed month end date */
+    SELECT EOMONTH(DATEADD(MONTH, DATEDIFF(MONTH, 0, GETDATE()) - 1, 0)) AS ReportingAsOfDate
+) a
+```
+
+* then the month name is derived from `ReportingAsOfDate`: The about report was run in February 2026. 
+* Last full month is **January 2026**
+* Month name is **January**
+
+```sql
+
+CROSS APPLY
+(
+    SELECT
+		cast(datename(month,a.ReportingAsOfDate) as varchar(9)) as ReportingMonthName,
+		cast(LEFT(DATENAME(month, a.ReportingAsOfDate), 3) AS nvarchar(3)) AS ReportingMonthShortName,
+```
 
 
 
