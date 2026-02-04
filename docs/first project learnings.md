@@ -1,8 +1,18 @@
-## Components of source SQL
+# Main learnings so far from this project (Direct Query semantic model)
 
-1. Caboodle DateDim
+1. Pushing date math (and most likely most logic) into the source SQL
+2. Correct DAX implementation:
+   - "Getter measures"
+   - Scalar values (such as putting a date or month name on a visual) 
+   - Proper technique to get an "in window' measure to reference the date axis properly
+
+
+
+## Pushing date math into source sql for date dimension
+
+1. Main source: Caboodle DateDim
 2. One row "Reporting Context" view
-   - indent
+3. Addition logic in main date view to calculate fiscal components
 
 ### One row Reporting Context view
 
@@ -74,8 +84,104 @@ through
         DATEFROMPARTS(YEAR(DATEADD(MONTH, 3, a.ReportingAsOfDate)) - 4,  9, 30) AS ReportingFiscalYearMinus4EndDate   
 ```
 
+Then this is brought into the main select against the Caboodle dim:
 
+```sql
+alter view dbo.vw_SurgeryDates
+as 
+select
+    -- Caboodle date dim - one row per date value
+    dd.DateKey,
+    dd.DateValue,
+    dd.DisplayString,
+    dd.DayOfWeek,
+    dd.WeekNumber,
+    dd.LastFridayDate,
+    dd.MonthEndDate,
+    dd.DayOfMonth,
+    ..
+    ..
+    /* ============================================================
+       Add (recommended): clean Fiscal* layer (per-date, from dd.DateValue)
+       FY starts Oct 1 (FiscalYear = YEAR(DateValue + 3 months))
+       ============================================================ */    
+	f.FiscalMonthNumber,
+    f.FiscalQuarterNumber,
+    f.FiscalMonthName,
+    f.FiscalMonthShortName,
+    f.FiscalYearMonth,
+    f.FiscalYearMonthSort,
+    f.FiscalMonthStartDate,
+    f.FiscalMonthEndDate,
 
+    -- one row "reporting context":
+    rpt.CurrentDate,
+    rpt.LastClosedMonthStartDate,
+    rpt.LastClosedMonthEndDate,
+    rpt.LastClosedMonthStartDateMinus1,
+    rpt.LastClosedMonthEndDateMinus1,
+    rpt.LastClosedMonthStartDateMinus2,
+    rpt.LastClosedMonthEndDateMinus2,
+    rpt.LastClosedMonthStartDateMinus3,
+    rpt.LastClosedMonthEndDateMinus3,
+    rpt.LastClosedMonthStartDateMinus4,
+    rpt.LastClosedMonthEndDateMinus4,
+    rpt.CurrentFiscalYear,
+    rpt.CurrentFiscalYearStartDate,
+    rpt.CurrentFiscalYearEndDate,
+    rpt.ReportingAsOfDate,
+	rpt.ReportingMonthName,
+	
+FROM CDWReport.dbo.DateDim AS dd
+CROSS JOIN HelixReportJDAT.dbo.vw_pwbi_SurgicalReportingDates AS rpt
+
+```
+then use the CROSS APPLY technique asaing as a way of propagating values for reuse purposes:
+
+```sql
+/* ============================================================
+   Compute fiscal components ONCE per dd.DateValue, reuse everywhere
+   ============================================================ */
+CROSS APPLY (
+	--pass-through primitives
+    SELECT
+        CAST(((MONTH(dd.DateValue) - 10 + 12) % 12) + 1 AS tinyint) AS FiscalMonthNumber,
+        CAST(YEAR(DATEADD(month, 3, dd.DateValue)) AS int)          AS FiscalYearNumber
+) fy
+CROSS APPLY (
+    select
+		--pass-through primitives
+		fy.FiscalMonthNumber as FiscalMonthNumber,
+        CAST(((fy.FiscalMonthNumber - 1) / 3) + 1 AS tinyint) AS FiscalQuarterNumber,
+
+		--display labels (calendar names, fiscal ordering)
+        CAST(DATENAME(month,dd.DateValue) as nvarchar(9)) as FiscalMonthName,
+        CAST(LEFT(DATENAME(month, dd.DateValue), 3) AS nvarchar(3)) AS FiscalMonthShortName,
+
+        CAST(
+            CONCAT(
+                'FY',
+                CAST(fy.FiscalYearNumber AS char(4)),
+                '-',
+                RIGHT('0' + CAST(fy.FiscalMonthNumber AS varchar(2)), 2)
+            ) AS nvarchar(9)
+        ) AS FiscalYearMonth,
+
+        CAST((fy.FiscalYearNumber * 100) + fy.FiscalMonthNumber AS int) AS FiscalYearMonthSort,
+
+        CAST(
+            DATEADD(
+                month,
+                DATEDIFF(month, 0, DATEADD(month, -9, dd.DateValue)),
+                0
+            ) AS date
+        ) AS FiscalMonthStartDate,
+
+        CAST(EOMONTH(DATEADD(month, -9, dd.DateValue)) AS date) AS FiscalMonthEndDate
+) f
+```
+
+Full reporting context sql:
 
 ```sql
 CREATE view dbo.vw_pwbi_SurgicalReportingDates
@@ -183,3 +289,20 @@ CROSS APPLY
 ) ctx;
 
 ```
+## DAX implementation
+
+### "Getter measures"
+
+> Measures whose sole purpose it to retrieve and expose a single, authoritative scalar value from the model - not to calculate or aggregate business data
+>
+They:
+* "get" a value that already exists
+* make it usable in visuals, filters, or other measures.
+* contain little or no business logic
+
+They are **accessors** , not computations
+
+**Examples from model**
+
+
+
