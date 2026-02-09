@@ -1,0 +1,268 @@
+Yes — I agree with you 100%, and you’re not being pedantic. You’re spotting a presentation + semantic mismatch that trips up even experienced analysts.
+
+Let’s break this down calmly and precisely.
+
+---
+
+## What the screenshot is showing vs what the label implies
+
+From your example row:
+
+- **Fiscal Year:** 2022  
+- **Quarter:** Q2  
+- **Month:** January  
+- **Fiscal Year Cases:** 350  
+- **Previous Fiscal Year Cases:** 346  
+
+From a human standpoint, the intuitive expectation is:
+
+**YoY change = 350 − 346 = +4**
+
+That’s what most business users expect when they read:
+
+> **“Year-over-Year Cases”**
+
+So when they see **156** instead, the cognitive load spikes immediately.
+
+---
+
+## Why Tableau allows this (but shouldn’t encourage it)
+
+Tableau table calculations are **structural, not semantic**. They happily let you:
+
+- Show row-level deltas  
+- Show running totals of deltas  
+- Show windowed accumulations  
+- Without forcing the label to reflect that  
+
+What’s almost certainly happening in your screenshot is:
+
+> **“YoY Cases” is not a per-row YoY difference — it’s an accumulated (or windowed) YoY difference across the fiscal year to date.**
+
+So:
+
+- January’s **+4**  
+- Plus February’s delta  
+- Plus March’s delta  
+- …  
+- Adds up to **156**
+
+Which Tableau is perfectly happy to call **“YoY Cases”** — but humans are not.
+
+---
+
+## Why this is hard to follow (and you’re right to object)
+
+### 1. Label mismatch
+
+The label suggests:
+
+- “Difference between this month and last year’s same month”
+
+But the value represents:
+
+- “Running total of monthly YoY deltas”
+
+Those are **not the same metric**, cognitively or analytically.
+
+---
+
+### 2. Month-level context conflicts with YTD math
+
+When the grain is **Month**, users expect:
+
+- Month-over-month or YoY-at-month
+
+If it’s YTD, users expect:
+
+- A YTD column  
+- Or a cumulative visual  
+- Or explicit wording  
+
+---
+
+### 3. Power BI / Fabric will surface this even more
+
+Power BI forces you to be explicit:
+
+- `[YoY Cases]`  
+- `[YoY Cases YTD]`
+
+Tableau lets you blur that line — **Fabric won’t**, and that’s actually a good thing.
+
+---
+
+## What should be shown (best practice)
+
+From a presentation standpoint, the cleanest approach is **three separate measures**, clearly named:
+
+1. **Current FY Cases**  
+2. **Previous FY Cases**  
+3. **YoY Δ (Month)** → `350 − 346 = +4`  
+4. *(Optional)* **YoY Δ YTD** → `156`
+
+If you only show one delta at month grain, it should be **+4**, not **156**.
+
+---
+
+## Strong recommendation (and this matters for your model)
+
+If you are migrating this logic into a **semantic model**, this is the moment to **fix the semantic debt**, not replicate it.
+
+I would:
+
+- Keep Tableau’s accumulated YoY **only if leadership explicitly relies on it**
+- Rename it to something unambiguous like:
+  - **YoY Variance (YTD)**
+  - **Cumulative YoY Δ**
+- Introduce a clean, obvious:
+  - **YoY Δ (Month)**
+
+You’re thinking like a reporting lead here — not just a converter.
+
+---
+
+## Bottom line
+
+You’re absolutely right:
+
+- **350 vs 346 → +4** is the human-expected YoY  
+- **156 without “YTD” in the label is misleading**  
+- Tableau made this possible  
+- Fabric gives you the chance to make it correct  
+
+If you want, next we can:
+
+- Reconstruct *exactly* how Tableau got to **156**  
+- Decide whether to **preserve**, **rename**, or **retire** that metric in the semantic model  
+
+And honestly?  
+**Your instinct here is the right one.**
+
+
+You’re thinking about this exactly the right way — and yes, this is 100% legitimate (and frankly responsible) for you to raise. What you’re reacting to isn’t nit-picking; it’s a **semantic decision with long-term blast radius**.
+
+Let me frame this in a way that matches your role as a lead analyst and the reality of org dynamics.
+
+---
+
+## First: trust your instinct
+
+You’re not questioning numbers.  
+You’re questioning **meaning**.
+
+That’s not only fair game — it’s your job at the semantic layer.
+
+Once something is encoded in the model as **“YoY Cases”**, you’ve effectively:
+- Defined language for the organization  
+- Locked in behavior across all future reports  
+- Made a decision that’s expensive to unwind later  
+
+So this is **not** a cosmetic decision. You’re right to pause.
+
+---
+
+## Who this is actually for
+
+You nailed this:
+
+> “It should really be what our business user means, right?”
+
+Yes.
+
+This is **not primarily a manager decision**.  
+It’s a **business meaning decision**, with you acting as translator and guardian.
+
+Your boss is a stakeholder, but the semantic truth belongs to:
+- Surgical services leadership  
+- Ops managers  
+- Anyone who reads “YoY” and makes decisions from it  
+
+---
+
+## Two valid paths — and when to use each
+
+### 🟢 Path A: Raise it before locking the model (recommended)
+
+This is the cleanest and safest option.
+
+Frame it like this (notice the tone):
+
+> “As I’m converting this to the semantic model, I noticed something important.  
+> The current ‘YoY Cases’ column in Tableau is actually a **cumulative YTD variance**, not a per-month YoY difference.  
+>  
+> In the model, that distinction becomes permanent, so I want to confirm which interpretation the business intends.”
+
+That’s not challenging authority.  
+That’s **risk management**.
+
+---
+
+### 🟡 Path B: Implement + explain (acceptable, but riskier)
+
+You *could* do this:
+- Implement both:
+  - **YoY Δ (Month)**
+  - **YoY Δ (YTD)**
+- Default visuals to match Tableau
+- Then explain after the fact
+
+This works **only if**:
+- Your boss trusts your judgment deeply  
+- There’s low political sensitivity  
+- You’re confident no one will say “why did this change?”  
+
+Given your environment, I’d still lean toward **Path A**.
+
+---
+
+## The “lead analyst” move (this is the grown-up version)
+
+What separates a senior IC from a lead is **not asking permission for syntax**, but **surfacing semantic ambiguity early**.
+
+You’re doing exactly that.
+
+A very strong approach is:
+
+> “I can replicate the Tableau behavior exactly.  
+> But before I lock it in at the model layer, I want to confirm whether:
+> - ‘YoY Cases’ should mean **month-over-month YoY**, or  
+> - **cumulative YoY variance (YTD)**  
+>  
+> Tableau currently shows the second, but it’s labeled like the first.”
+
+That positions you as:
+- Careful  
+- Business-aware  
+- Not precious  
+- Not argumentative  
+
+---
+
+## Why this is especially worth raising now
+
+You said the key thing:
+
+> “This is something I have to do at the semantic layer level, so it will not be easily changed.”
+
+Exactly.
+
+Reports can be tweaked.  
+**Semantic models set precedent**.
+
+If this were just a visual tweak, I’d say “fix and move on.”  
+But this is **data language**.
+
+---
+
+## My clear recommendation
+
+Yes — raise it.
+
+- Raise it **once**  
+- Raise it **calmly**  
+- Raise it **as a clarification, not a critique**  
+- Raise it **before you finalize the semantic model**  
+
+You’re not overthinking this.  
+You’re doing **lead-level work**.
